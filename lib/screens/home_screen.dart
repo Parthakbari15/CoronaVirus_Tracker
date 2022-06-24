@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utilities/const.dart';
 import 'package:lottie/lottie.dart';
-import '../services/network.dart';
+// import '../services/network.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
