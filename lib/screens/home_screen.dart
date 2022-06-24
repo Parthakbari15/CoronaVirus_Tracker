@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
 import '../utilities/const.dart';
 import 'package:lottie/lottie.dart';
+import '../services/network.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
+const url = "https://disease.sh/v3/covid-19/countries";
+List _countries = [];
+
+var confirmedCase,
+    recoverdCase,
+    death,
+    totalCases,
+    totalDeaths,
+    totalRecoverd,
+    activeCase,
+    totalActive;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -12,8 +26,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void fetchData() async {
+    http.Response response = await http.get(Uri.parse(url));
+    final countries = json.decode(response.body);
+    setState(() {
+      _countries = countries;
+    });
+    print(countries);
+  }
 
-  var cityName;
+  void getData(currentCountry) async {
+    http.Response response =
+        await http.get(Uri.parse(url + "/" + currentCountry));
+    final data = json.decode(response.body);
+    setState(() {
+      confirmedCase = data['todayCases'];
+      recoverdCase = data['todayRecovered'];
+      death = data['todayDeaths'];
+      totalCases = data['cases'];
+      totalDeaths = data['deaths'];
+      totalRecoverd = data['recovered'];
+      totalActive = data['active'];
+    });
+  }
+
+  void initState() {
+    super.initState();
+    fetchData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,25 +66,35 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          TextField(
-            style: TextStyle(color: Colors.white),
-            decoration: kTextFieldInputDecoration,
-            onChanged: (value) {
-              cityName = value;
-              print(cityName);
-            },
-          ),
-          FlatButton(
-            color: Colors.lightGreen,
-            onPressed: () {
-              print(cityName);
-            },
-            child: Text(
-              "Get Data",
-              style: kTextStyle,
-              softWrap: true,
-            ),
-          ),
+          _countries.isNotEmpty
+              ? DropdownButton(
+                  hint: Text("Select Country"),
+
+                  // Down Arrow Icon
+                  icon: const Icon(Icons.keyboard_arrow_down),
+
+                  // Array list of items
+                  items: _countries.map((value) {
+                    return DropdownMenuItem(
+                      value: value['country'],
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                value['countryInfo']['flag'].toString()),
+                          ),
+                          Text(
+                            value['country'].toString(),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    getData(value);
+                  },
+                )
+              : CircularProgressIndicator(),
           Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -69,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           animate: true,
                         ),
                         Text(
-                          "12005",
+                          confirmedCase.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
@@ -97,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           animate: true,
                         ),
                         Text(
-                          "12005",
+                          recoverdCase.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
@@ -125,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           animate: true,
                         ),
                         Text(
-                          "1200",
+                          death.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
@@ -163,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: kTextStyle,
                         ),
                         Text(
-                          "1890",
+                          totalCases.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
@@ -193,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: kTextStyle,
                         ),
                         Text(
-                          "189025",
+                          totalDeaths.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
@@ -227,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: kTextStyle,
                         ),
                         Text(
-                          "1890",
+                          totalRecoverd.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
@@ -257,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: kTextStyle,
                         ),
                         Text(
-                          "1890255544545",
+                          totalActive.toString(),
                           style: kTextStyle,
                           softWrap: true,
                         ),
